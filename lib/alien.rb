@@ -1,5 +1,6 @@
 require 'alien/version'
 require 'alien/connection'
+require 'alien/payload'
 require 'bunny'
 require 'json'
 
@@ -11,20 +12,20 @@ module Alien
   class Service
     class << self
       def start(service_name:, **options)
-        @connection = Connection
+        @connection ||= Connection
           .new(service_name: service_name, **options)
 
         @connection.start
 
         @connection.queue.subscribe do |delivery_info, metadata, payload|
           #puts delivery_info.inspect
-          puts metadata.inspect
+          #puts metadata.inspect
           puts JSON.parse(payload)
         end
 
         @connection.exchange.on_return do |info, properties, content|
           puts "#{content} was returned! reply_code = #{info.reply_code}, reply_text = #{info.reply_text}"
-          raise MessageReturnedError.new("This message was returned: #{content}")
+          raise MessageReturnedError.new("#{content} was returned! reply_code = #{info.reply_code}, reply_text = #{info.reply_text}")
         end
 
         self
@@ -35,7 +36,11 @@ module Alien
       end
 
       def publish(service_name, payload, &block)
-        @connection.exchange.publish(payload, routing_key: service_name, content_type: 'application/json')
+        @connection.exchange.publish(
+          Alien::Payload.new(payload: payload).format,
+          routing_key: service_name,
+          content_type: 'application/json'
+        )
       end
     end
   end
