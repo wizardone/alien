@@ -10,48 +10,55 @@ module Alien
   class MessageReturnedError < StandardError; end
 
   class Service
+
     class << self
       def start(service_name:, **options)
-        @connection ||= Connection
-          .new(service_name: service_name, **options)
-
-        @connection.start
-
-        @connection.queue.subscribe do |delivery_info, metadata, payload|
-          #puts delivery_info.inspect
-          #puts metadata.inspect
-          puts JSON.parse(payload)
-        end
-
-        @connection.exchange.on_return do |info, properties, content|
-          puts "#{content} was returned! reply_code = #{info.reply_code}, reply_text = #{info.reply_text}"
-          raise MessageReturnedError.new("#{content} was returned! reply_code = #{info.reply_code}, reply_text = #{info.reply_text}")
-        end
-
-        self
+        default_options = {
+          host: 'localhost',
+          port: '5672',
+          user: 'guest',
+          pass: 'guest',
+          threaded: true
+        }.merge(options)
+        new(service_name, **default_options)
       end
 
-      def stop
-        @connection.stop
-      end
-
-      def publish(service_name, payload, &block)
-        @connection.exchange.publish(
-          Alien::Payload.new(payload: payload).format,
-          routing_key: service_name,
-          content_type: 'application/json'
-        )
+      def stop(service)
+        service.connection.stop
       end
     end
-  end
 
-  module ConnectionUtilities
-    def start(conn)
-      conn.start
+    attr_reader :service_name
+
+    def initialize(service_name, **options)
+      @service_name = service_name
+      @connection ||= Connection
+        .new(service_name: service_name, **options)
+      @connection.start
+
+      @connection.queue.subscribe do |delivery_info, metadata, payload|
+        #puts delivery_info.inspect
+        #puts metadata.inspect
+        puts JSON.parse(payload)
+      end
+
+      @connection.exchange.on_return do |info, properties, content|
+        puts "#{content} was returned! reply_code = #{info.reply_code}, reply_text = #{info.reply_text}"
+        raise MessageReturnedError.new("#{content} was returned! reply_code = #{info.reply_code}, reply_text = #{info.reply_text}")
+      end
     end
 
-    def stop(conn)
-      conn.stop
+    def identifier
+      # Generate something unique, service name might not be unique
+      service_name
+    end
+
+    def publish(service_name, payload, &block)
+      @connection.exchange.publish(
+        Alien::Payload.new(payload: payload).format,
+        routing_key: service_name,
+        content_type: 'application/json'
+      )
     end
   end
 end

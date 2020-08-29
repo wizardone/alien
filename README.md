@@ -24,7 +24,7 @@ Or install it yourself as:
 service1 = Alien.new(name: 'Service1')
 service2 = Alien.new(name: 'Service2')
 
-service1.seek('Service2') do |payload|
+service1.publish('Service2') do |payload|
 	"Hey, wasup"
 end
 
