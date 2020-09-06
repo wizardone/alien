@@ -10,7 +10,7 @@ GEM
     bunny (2.15.0)
       amq-protocol (~> 2.3, >= 2.3.1)
     diff-lcs (1.4.4)
-    rake (10.5.0)
+    rake (12.3.3)
     rspec (3.9.0)
       rspec-core (~> 3.9.0)
       rspec-expectations (~> 3.9.0)
@@ -32,7 +32,7 @@ DEPENDENCIES
   alien!
   bundler (~> 2.0)
   bunny (>= 2.14.1)
-  rake (~> 10.0)
+  rake (~> 12.3.3)
   rspec (~> 3.0)
 
 BUNDLED WITH
