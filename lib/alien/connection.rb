@@ -1,10 +1,8 @@
 module Alien
   class Connection
-    #Error = Class.new(Bunny::TCPConnectionFailedForAllHosts)
     attr_reader :conn, :service_name
 
     def initialize(service_name:, **options)
-      puts options.inspect
       @conn = Bunny.new(options)
       @service_name = service_name
     end
@@ -18,7 +16,7 @@ module Alien
     end
 
     def channel(**options)
-      @channel ||= conn.create_channel()
+      @channel ||= conn.create_channel
     end
 
     def queue

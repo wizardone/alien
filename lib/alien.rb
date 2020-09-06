@@ -3,6 +3,7 @@ require 'alien/connection'
 require 'alien/payload'
 require 'bunny'
 require 'json'
+require 'securerandom'
 
 module Alien
   class Error < StandardError; end
@@ -49,8 +50,7 @@ module Alien
     end
 
     def identifier
-      # Generate something unique, service name might not be unique
-      service_name
+      "#{service_name}-#{SecureRandom.uuid}"
     end
 
     def publish(service_name, payload, &block)
@@ -59,6 +59,12 @@ module Alien
         routing_key: service_name,
         content_type: 'application/json'
       )
+    end
+
+    private
+
+    def format_payload
+
     end
   end
 end
