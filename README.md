@@ -21,8 +21,8 @@ Or install it yourself as:
 ## Usage
 
 ```ruby
-service1 = Alien.new(name: 'Service1')
-service2 = Alien.new(name: 'Service2')
+service1 = Alien::Service.start(name: 'Service1')
+service2 = Alien::Service.start(name: 'Service2')
 
 service1.publish('Service2') do |payload|
 	"Hey, wasup"

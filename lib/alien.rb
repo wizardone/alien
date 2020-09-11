@@ -24,18 +24,19 @@ module Alien
         new(service_name, **default_options)
       end
 
+      # TODO: Accept either a service instance or a service identifier
       def stop(service)
-        service.connection.stop
+        service.stop
       end
     end
 
-    attr_reader :service_name
+    attr_reader :service_name, :connection, :state
 
     def initialize(service_name, **options)
       @service_name = service_name
-      @connection ||= Connection
-        .new(service_name: service_name, **options)
+      @connection ||= Connection.new(service_name: service_name, **options)
       @connection.start
+      switch(state: :on)
 
       @connection.queue.subscribe do |delivery_info, metadata, payload|
         #puts delivery_info.inspect
@@ -61,7 +62,16 @@ module Alien
       )
     end
 
+    def stop
+      connection.stop
+      switch(state: :off)
+    end
+
     private
+
+    def switch(state:)
+      @state = state
+    end
 
     def format_payload
 
